@@ -1,0 +1,656 @@
+username: csa476q1
+password: dlxbaz79
+root password: bzreht40
+
+-----------------------------------------------------------
+
+
+
+-----------------------------------------------------------
+
+Table of Contents
+
+[x] introduction
+[x] linux_intro
+[x] linux_use
+	grep failed /var/log/*
+		searches for filed in /var/log/*
+[x] file_organization
+	/boot - the kernel and other boot-time items
+	/root - root home directory
+	/proc - window into kernel.  not real directory
+	/sys  - window into hardware
+[x] user_administration
+	/etc/passwd
+	#name:password:uid:primary-group:info:home:shell
+	joe:x:111:100:OK:/home/joe:/bin/bash
+
+	/etc/shadow
+	name:password:pwchange:actexpire:::::
+
+	/etc/group
+	#name:password:gid:users
+	database::123:john,joe
+
+	su joe - start shell with joe
+
+	~/.bash_profile - script ran on login
+	source .bash_profile - runs .bash_profile script
+	alias mls='ls -la' - type mls, execute ls -la
+
+	/etc/aliases - mail aliases
+	jazon jazon@hi.com - forwar jazon's mail to jazon@hi.com
+	admins sue bob - forward admins mail to sue and bob
+
+	passwd - sets password
+
+	adduser
+	1) create passwd entry
+	2) create shadow entry
+	3) set password
+	4) create user home directory
+	5) chmod 755 user home directory
+	6) chown -R joe ~joe
+
+	deleteuser
+	1) remove passwd and shadow entries
+	2) remove home directory
+	3) remove cron entries
+	4) remove/change/add mail aliases
+	5) remove unread mail
+
+[x] shell_programming
+	studentprog |& less - send strerr to less
+	studentprog &> save.me - send all output to save.me
+	ps aux > Look & - run this command in background
+	jobs - what is running in the background
+	^Z - suspend current job
+	bg - background suspended job
+	bg %3 - background job 3 on the jobs list
+	fg - foreground the job
+	fg %2 - foreground job 2 on the jobs list
+
+	#!/bin/bash
+	count=5
+	message=Hello
+	msg2="Hi There"
+	read msg3 #reads msg3 from keybaord
+	echo $hello
+	echo $0 #print 1st arg
+	echo $1 #print 2nd arg
+	echo $# #print the number of args
+	echo $@ #print all args
+	echo $? #prints return value of last program
+	let icount=$count+1 #let makes icount a number
+	if [ $icount -lt $count ]; then
+		echo "hi"
+	else
+		echo "no"
+	fi
+	case $count in
+		0)
+			echo not there
+		    ;;
+		3|4)
+			echo three or four
+			;;
+		5)
+			echo five
+			;;
+		*)
+			echo default
+			;;
+	esac
+
+[x] filesystems
+	suberblock - overall info on file system
+	data block - actual file and directory contents
+	inodes     - used to find datablocks of files
+
+	ln new old      - creates a hard link
+	ln -s alias old - creates a symlink
+
+	df - lists mounted devices and usage stats
+	mount - lists all attachments
+	du - lists disk usage
+	dump2fs - dump the superblock
+	fdisk -l - format a disk
+	/etc/fstab - filesystem configuration file
+
+	fdformat - formats a floppy disk
+	mke2fs - builds a linux fs in formated disk
+
+	setup linux harddrive
+		1) clean out obsolete partitions (fdisk)
+		2) establish new linux partitions (fidsk)
+		3) construct fs (mke2fs)
+		4) test setups (mount/umount)
+		5) modify fstab
+		6) test the reboot
+
+	fdisk - administer partitions
+
+	mount /dev/fd0 /home/john/floppy
+
+	/etc/fstab - automatic mount entries
+	format:  source    dest filesystem-type options  dump order
+	example: /dev/sdc1 /u4  ext2            defaults 1    1
+
+	mount -a  - mounts all fstab entries without noauto
+	umount -a - unmounts all fstab entries without noauto
+
+	fsck - checks a fs
+	fsck /dev/sda1 - checks /dev/sda1.  fs should be unmounted
+
+	/dev/sda - 1st hard drive
+	/dev/sda1 - 1st partition 1st harddrive
+
+	/dev/sdb - 2nd hard drive
+	/dev/sdb2 - 2nd partition on 2nd hard drive
+[x] processes
+	uptime - reporst the number of runable processes
+	free - memory stats
+	vmstat - stats of processes, swap space, mem usage, cpu usage, io
+	top - stats of heaviest processes
+	ps - running processes
+	ps auxww - all possible options
+	killall hwk1 - kills all processes named "hwk1"
+[x] virtual_memory
+	swap space - slow ram
+	free - free memory
+
+	swap partition
+	1) label partition as swap (82)
+	2) mkswap /dev/sdc1
+	3) swapon /dev/sdc1
+	on shut down swapoff /dev/sdc1
+
+	swapfile
+	1) dd if=/dev/zero of=/myswap bs=1024 count=1024
+	2) mkswap /myswap
+	3) swapon /myswap
+
+	fstab
+	/myswap none swap sw 0 0
+
+	swapon -a - swaps on all swaps in fstab
+[ ] init
+[ ] cron
+[ ] kernel
+[ ] x11
+[ ] tar
+[ ] encryption
+[ ] terminals
+[ ] network_basics
+[x] nis
+	/etc/defaultdomain - contains nis domain name 
+
+	nisdomainname - prints domain name
+
+	SETUP
+
+	1) create /etc/defaultdomain
+	2) chmod a+x /etc/rc.d/rc.yp
+	3) make sure /var/yp is a directory
+	4) if server not on same cable, edit /etc/yp.conf
+	5) setup /etc/nsswitch.conf and other files to use nis
+	6) reboot or start by hand
+	7) start by hand
+		nisdomainname
+		/usr/sbin/ypbind
+
+	/etc/nsswitch.conf defines lookup order
+	passwd: files nis
+	hosts: dns nis files
+	aliasses: nis dbm
+
+	#+ format compatibility
+	passwd: compat
+	group: compat
+
+	/etc/yp.conf
+	#specify a ypserver
+	server host_name domain_name
+
+	YP Master/slave Server
+	1) edit defaultdomain
+	   make sure /var/yp is a directory
+	2) chmod rc.yp and uncomment yp server lines
+	   (protect with if -e) for /var/yp/domainname
+	3) make sure you ahve reall files for password, groups, netgroup,
+	   services, protocols
+	   do not have the + entries
+	4) setup domain name
+	5) as root, run ypinit -m
+	6) start ypserv - for master server
+	   start ypinit -s ip.name.of.master.server - for slave
+
+	ypwhich - what server am I talking to
+	ypset - use this server
+	ypcat - print what yp has in the named map
+	ypmatch - find specified patter in a named map
+	yppush - master server sends copies of named map to slave servers
+	ypxfr - slave server gets the named map from the master server
+	ypmake - rebuilds he named map from the corresponding file
+
+	/etc/netgroup - form: name tuple list
+	print4 (lab84,-,cecsnet) (lab86,-,cecsnet)
+	file1 (lynkx,-cecsnet) (panther,-,cecsnet)
+	combined print4 file1 (cougar,-,cecsnet)
+	#format (machinename,username'u'for-all-users,domain name)
+[x] nfs
+	rpc.portmap - NFS is based on remote procedure call
+	rpc.mountd - server runs this.  handles mount requests
+	rpc.nfsd - servers runs this.  handles file requests from clients
+
+	/etc/exports - say waht is exported and to whom
+	#allow lab17 to read, write, sync /harddisk
+	/harddisk lab17.net.cecs.csulb.edu(rw,sync)
+	#allow lab19 to readonly and lab29 to read/write /usr/info
+	/usr/info lab19.net.cecs.csulb.edu(ro) lab20(rw)
+	#allow anybody to read /usr/bin
+	/usr/bin *.net.cecs.csulb.edu(ro)
+
+	#options, sync - write immediately
+	#         root_squash - client root doest not get server root
+	#         no_subtree_check - ensure file reqs are in
+	#                          - exported subtree
+
+	exportfs, causes exports file to be reread
+
+	REMOTE PROGRAMS
+
+	started by rc.nfsd script at boot
+	enable script with chmod a+x rc.nfsd
+
+	/etc/fstab
+	lynx.net.cecs.csulb.edu:/u1 /lynx nfs bg,soft 0 0
+
+	#bg - background if mount times out
+	#soft - report error if NFS op times out
+	#intr - allow a control to abort opartion if timed out
+	#nolock - does not attempt to lock against other clients
+
+	AUTOMOUNT - mount only on cd,ls,etc.
+
+	/usr/sbin/automount /home/mount file /etc/autostuff
+
+	sample autostuff
+	u1 -soft,intr d1.cecs.cslb.edu:/u1
+	mail -soft,intr charlotte.cecs.csulb.edu:/var/mail
+[x] ftp
+	protocol listed in /etc/services
+	server listed in inetd.conf
+
+	chroot /home/ftp - grants access to /home/ftp
+
+	need to set up mini-unix in /home/ftp
+
+	ldd - list the dynamically loaded libraries the program needs
+
+	/etc/ftpusers - list of users not allowed to ftp in
+	                (if ftp is here, anonymous ftp is disabled)
+
+	/etc/proftpd.conf - config specific to proftp
+
+
+
+	sftp - more secure version of ftp with encryption
+[x] install
+	install directory is /sdb/slack13.37/slackware
+
+	1) hardware rom bios must support net boot
+	2) bios must be set to allow net boot
+	3) Hit F12 during boot sequence to enter boot menu
+
+	boot server must be running dhcpd and tftpd
+
+	1) dhcpd gives the client ip address
+	2) dhcpd tells client name of file to download/run
+	3) pxelinux reads config files off boot server
+	4) downloads kernel bzImage
+	5) downloads and decompresses root filesystem
+	6) boots kernel
+
+	To build disk,
+	1) set up swap partition
+	2) set up native partition fs (mke2fs)
+
+	Setup script runs mkswap and turns swapping on for partition
+
+	/sdb/slack13.37/slackware
+[x] syslog
+	/etc/syslog.conf - config for syslog
+
+	0 Emergency: system is unusable
+	1 Alert: action must be taken immediately
+	2 Critical: critical conditions
+	3 Error: error conditions
+	4 Warning: warning conditions
+	5 Notice: normal but significant condition
+	6 Informational: informational messages
+	7 Debug: debug-level messages
+[x] printing
+
+	#print pix.txt
+	lpr pix.txt
+
+	#examine print queue
+	lpq
+
+	#remove jobs from queue
+	lprm
+
+	/var/spool/lpd - default spool directory
+
+	#status of all known printers
+	lpc status
+
+	#disable cecs1 printer
+	lpc disable cecs1
+
+	#stop printing
+	stop
+
+	#stop and restart server
+	kill
+
+	#reread config files
+	reread
+
+
+	#send a job to the front of the queue
+	topq
+
+	#disable printing and queueing
+	down
+
+	#printer capabiliies database
+	/etc/printcap
+
+	#printer called jaguar or lp
+	#it is on port lp0
+	#/var/spool/lp is the spool directory
+	#tr - do a form feed after the job
+	jaguar|lp:lp=/dev/lp0:sd=/var/spool/lpd:tr=\f
+
+	#print remotely to machine ocelot printer hpcolor
+	#spool dir = /var/spool/cecs1
+	remprint:lp=:rm=ocelot:rp=hpcolor:sd=/var/spool/cecs1:
+[x] mail
+	/etc/mail/sendmail.cf - contains replacement rules
+	
+	#R is for rule
+	#$* match anything
+	#% match a percent sign
+	#$* match anything
+	#$1 whatever is matched by first $*
+	#$2 whatever is matched by second $*
+	R$* % $* $1 @ $2
+
+	#joe%cheetah is matched and rewritten as joe@cheetah
+
+	procmail - local mail program
+
+	#anything from volper tos to file ccs
+	:0
+	* ^From.*volper
+	$HOME/mymaildir/ccs
+
+	#anything with homework subject gotes to homeworkmail
+	:0:
+	* ^Subject.*homework
+	homeworkmail
+
+	#all mail is forwarded to new address the file otherlock is used
+	#as a lock file
+	:0:otherlock
+	*
+	! newaddress@newplace.com
+
+	#pipe all mail to a program
+	:0
+	*
+	| $HOME/bin/mymailparser
+
+	#B apply condition to body
+	#H apply condition to header
+	:0 B:
+	* BUY NOW
+	/dev/null
+
+	/usr/share/sendmail/cf/cf/sendmail-slackware.mc (sendmail.mc)
+	#handle a mail by a mail hub
+	define('MAIL_HUB','mailserver.example.com')
+	#handle mail by external relay
+	define('SMART_HOST','mailserver.example.com')
+
+	#only allow local mail
+	DAEMON_OPTIONS('Family=inet, Name=MTA, Addr=127.0.0.1')dnl
+
+	#finally, run make in /etc/mail
+	make
+	make install-cf
+[X] security
+
+	1) every account should have a password (unless it is locked)
+	2) password should not be in the dictionary
+	3) passwords should not contain personal info
+	4) mix letters numbers and symbols.  user lower and upper case
+
+	/etc/long.defs - conf file for logins
+	CONSOLE /etc/securetty - root login, references file
+	CHFN_RESTRICT - lists what the user can change
+	ENV_PATH, ENV_SUPATCH - login default
+	FAILLOG_ENAB - login failure reports
+	PORTTIME_ENAB - what hours you can login
+	SYSLOG_SU_ENAB, SULOG_FILE - track su's
+	SU_WHEEL_ONLY - only wheel group can su to root (/etc/group)
+	-rws--x--x john student jpriv
+	-rw------- john student times
+
+[x] iptables
+	#block all inbound ssh connections (-A appends)
+	iptables -A INPUT -p tcp --dport ssh -j REJECT
+
+	#allow ssh from campus, reject all other ssh
+	iptables -A INPUT -p tcp --dport ssh -s 134.139.0.0/16 -j ACCEPT
+	iptables -A INPUT -p tcp --dport ssh -j REJECT
+
+	#block requests to port 30
+	iptables -A INPUT -p tcp --dport 30 -j REJECT
+
+	#no web browsing
+	iptables -A OUTPUT -p tcp --dport www -j REJECT
+
+	#list all rules in chain
+	iptables -L OUTPUT
+
+	#delete rule 2
+	iptables -D INPUT 2
+
+	#insert rule at 2
+	iptables -I INPUT 2 -p tcp --dport ftp -j REJECT
+
+	# -R replaces a rule, -F deletes all rules from chain
+
+	#specify table filter
+	iptables -t filter -A OUTPUT --dport www -j REJECT
+
+	#list iptables
+	iptables -S
+
+	tables
+
+	nat - firewall hides server, forwards packets to it
+	      turns gateway into firewall
+	filter - allows packets to be rejected, dropped, or accepted
+	mangle - midifes the packeet header fields
+[x] www
+	httpd - daemon that provides WWW service
+
+	/etc/httpd - config directory
+	/etc/httpd/httpd.conf - config file
+
+	<Directory />
+	Options FollowSymLinks
+	AllowOverride None
+	Order allow,deny
+	Deny from all
+	</Directory>
+
+	<Directory /var/www>
+	Options Indexes FollowSymLinks
+	AllowOverride FileInfo
+	Order allow,deny
+	allow from all
+	deny from .hacker.com
+	</Directory>
+
+	UserDir public_html
+
+	<Directory /home/*>
+	AllowOverride All
+	Options Indexes FollowSymLinks
+	Order deny,allow
+	Deny from all
+	Allow from .cecs.csulb.edu
+	</Directory>
+
+	<FilesMatch "^\.ht">
+	Order allow,deny
+	Deny from all
+	Satisfy All
+	</FilesMatch>
+
+	#.htdocs file
+	AuthName "MyCluster"
+	AuthType Basic
+	AuthUserFile /full/path/of/pwd/file/
+	require valid-user
+
+	htpasswd -c users bob - creates a password file named users for 
+	                        bob and prompts for password
+[x] dns
+	csulb.edu IN NS garuda.csulb.edu
+	139.134.in-addr.arpa IN NS garuda.csulb.edu
+	garuida.csulb.edu IN A 134.139.1.2
+
+	or
+
+	csulb.edu IN NS 134.139.1.2
+	139.134.in-addr.arpa IN NS 134.139.1.2
+
+	cecs.csulb.edu IN NS 34.139.249.20
+	248.139.134.in-addr.arpa IN NS 134.139.249.20
+	247.139.134.in-addr.arpa IN NS 134.139.249.20
+
+	/etc/named.conf - main file for named.  lists dns.
+
+	zone "cecs.csulb.du" in {
+		type master;
+		file "named.hosts";
+	};
+	zone "249.139.134.in-adr.arpa" in {
+		type master;
+		file "named.rev249";
+	};
+
+	named-checkconf - checks syntax of named.conf file
+	named-checkzone - does a simple check of the syntax of a zone file
+
+[x] rdist
+	distributes files
+
+	rdist -f mydistfile - updates files in all machines
+
+	distfile format:
+	newfstab -> root@lab30.net.cecs.csulb.edu
+	  install /etc/fstab ;
+	#using root on account lab 30, copy fstab to lab30
+	#locally it is in newfstab, but on lab30 it is /etc/fstab
+	newgroups -> (
+	  root@lab30.net.cecs.csulb.edu
+	  root@lab32.net.cecs.csulb.edu )
+	  install /etc/group ;
+	#variables
+	HOSTS = (
+	  roost@lab30.net.cecs.csulb.edu
+	  roost@lab31.net.cecs.csulb.edu
+	  roost@lab32.net.cecs.csulb.edu
+	  )
+	newgroups -> ${HOSTS}
+	  install /etc/group ;
+	#multiple files, email notification
+	wwwconf ->ww@lab30.net.cecs.csulb.edu
+	  install /etc/www/www.conf ;
+	  notify sue@lab17.net.cecs.csulb.edu ;
+	newsuelogin -> sue@lab31.net.cecs.csulb.edu
+	  install /home/sue/.login ;
+	#install directories recursively
+	FILES = ( /usr/src/yp /usr/X11 )
+	HOSTS = ( root@lab30 root@lab31 )
+	${FILES} -> ${HOSTS}
+	  install -R ;
+	#run command as part of install
+	master.passwd -> root@unix70.cecs.csulb.edu
+	  install /etc/master.passwd ;
+	  special "pwd_mkdb /etc/master.passwd" ;
+
+	cannot rdist to machine unless premissions exits
+	operates off rlogin/rcp permission (.rhosts)
+	rshd must be enabled in inetd.conf
+
+	rdist -P /usr/bin/ssh - rdist must use ssh
+
+	.rhosts for root on unix70
+	jaguar.net.cecs.csulb.edu root
+[x] samba
+	/etc/smb.conf
+
+	#applies to all sections
+	[globals]
+	hosts allow = 134.139 #allowed hosts
+	security = user #username and password required
+
+	#sample
+	[publicstuff]
+	  path = /usr/public
+	  read only = yes
+	  public = yes
+[x] quota
+	/etc/fstab
+	/dev/sdb1 /u1 rw,quota 1 1	  #quotas set for users and groups
+	/dev/sdc1 /u1 rw,usrquota 1 1 #quotas set for users
+	/dev/sdd1 /u1 rw,grpquota 1 1 #quotas set for groups
+	/dev/sde1 /u1 ro,noquota 1 1  #no quotas set (default)
+
+	aquota.user - user quota file located in root of directory
+	aquota.group - group quota file located in root of directory
+
+	quota file modes: 600
+
+	quotacheck - creates quota files
+	edquota - modify quota
+
+	quota -g - display quota of all group user belongs to
+	quota -u bob - displays bob's quota
+
+	quotacheck -a -m - creates quota file using fstab and ignoring ro
+	edquota -u joe sam - edit sam's and joe's quotas
+	edquota -g admins - edit admin's group quota
+
+	quotaon /u3 - turns quotas on for /ue
+	quotaon -a - turns quotas on for all fstab entries
+	quotaoff - turns off quotas
+
+	repquota /u2 - reports /u2 quota summary
+
+[ ] dhcp
+	bootp
+
+	1) broadcast a bootp request
+
+[x] ldap
+[x] other_unix
+[x] review
